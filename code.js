@@ -16,38 +16,32 @@ else if (figma.command == "paste") {
         for (let node of copy) {
             let findNode = figma.getNodeById(node.id);
             if (findNode) {
-                (findNode.parent.type);
+                findNode.parent.type;
                 switch (findNode.type) {
                     case "COMPONENT":
-                        ("Fzer instancia");
                         var instance = findNode.createInstance();
                         switch (findNode.parent.type) {
                             case "PAGE":
-                                ("filho da pagina");
                                 instance.x = 0;
                                 instance.y = 0;
                                 destination.appendChild(instance);
                                 break;
                             default:
-                                ("Não é filho da página");
                                 instance.x = findNode.x;
                                 instance.y = findNode.y;
                                 destination.appendChild(instance);
                         }
                         break;
                     default:
-                        ("Elemento normal");
                         let clone = findNode.clone();
-                        (clone.parent.type);
+                        clone.parent.type;
                         switch (findNode.parent.type) {
                             case "PAGE":
-                                ("Normal filho da pagina");
                                 clone.x = 0;
                                 clone.y = 0;
                                 destination.appendChild(clone);
                                 break;
                             default:
-                                ("Normal, nao é filho da página");
                                 clone.x = findNode.x;
                                 clone.y = findNode.y;
                                 destination.appendChild(clone);
