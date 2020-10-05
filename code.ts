@@ -16,14 +16,15 @@ if (figma.command == "copy") {
     for (let node of copy) {
       let findNode = figma.getNodeById(node.id) as SceneNode;
       if (findNode) {
+        console.log(findNode.parent.type);
         findNode.parent.type;
         switch (findNode.type) {
           case "COMPONENT":
             var instance = findNode.createInstance();
             switch (findNode.parent.type) {
               case "PAGE":
-                instance.x = 0;
-                instance.y = 0;
+                instance.x = (destination.width/2)-(instance.width/2);
+                instance.y = (destination.height/2)-(instance.height/2);
                 destination.appendChild(instance);
                 break;
               default:
@@ -34,11 +35,10 @@ if (figma.command == "copy") {
             break;
           default:
             let clone = findNode.clone();
-            clone.parent.type;
             switch (findNode.parent.type) {
               case "PAGE":
-                clone.x = 0;
-                clone.y = 0;
+                clone.x = (destination.width/2)-(clone.width/2);
+                clone.y = (destination.height/2)-(clone.height/2);
                 destination.appendChild(clone);
                 break;
               default:
