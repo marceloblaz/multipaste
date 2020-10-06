@@ -22,5 +22,5 @@ If you wish, you can also create a shortcut for clearing plugin cache by followi
 
 
 ### What can't this plugin do:
-- This plugin won't work properly if you delete a copied node before pasting it first.
+- This plugin won't work properly if you delete a copied node before pasting it first. It will still work for nodes that weren't deleted though.
 - This plugin doesn't access your system's clipboard, so you may not use regular copy/pasting commands to make it work;
