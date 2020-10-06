@@ -12,3 +12,15 @@ A simpler way to use plugins is by creating shortcuts. To create a shortcut, cli
 	 >Menu title: Plugins->Multipaste->Copy (⌃⌘V)
 
 If you wish, you can also create a shortcut for clearing plugin cache by following the same procedure. Just switch the command and choose a shortcut
+
+
+### What can this plugin do:
+- Copying multiple nodes, either nested in frames or in the page itself, at once and then pasting all of them into multiple frames or groups at once;
+- If any of the copied nodes is a component, it will create an instance of it and paste the instance, not duplicate the component;
+- Nodes that were copied from another frame will maintain its position in the new frame;
+- Nodes that weren't in a frame when copied will be placed in the center of the frames they get pasted into (same behaviour Figma already implements for copy/pasting).
+
+
+### What can't this plugin do:
+- This plugin won't work properly if you delete a copied node before pasting it first.
+- This plugin doesn't access your system's clipboard, so you may not use regular copy/pasting commands to make it work;
