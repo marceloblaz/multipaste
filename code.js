@@ -1,6 +1,7 @@
 if (figma.command == "copy") {
     let selection = figma.currentPage.selection;
-    figma.root.setPluginData("copy", JSON.stringify(selection));
+    let ids = Array.from(selection.map(item => { return item.id; }));
+    figma.root.setPluginData("copy", JSON.stringify(ids));
     figma.closePlugin("Layers copied");
 }
 else if (figma.command == "paste") {
@@ -14,9 +15,8 @@ else if (figma.command == "paste") {
     }
     for (let destination of destinations) {
         for (let node of copy) {
-            let findNode = figma.getNodeById(node.id);
+            let findNode = figma.getNodeById(node);
             if (findNode) {
-                console.log(findNode.parent.type);
                 findNode.parent.type;
                 switch (findNode.type) {
                     case "COMPONENT":
@@ -49,7 +49,7 @@ else if (figma.command == "paste") {
                 }
             }
             else {
-                figma.closePlugin("Some layer was deleted, therefore wasn't pasted. Don't delete a layer before you paste it.");
+                figma.closePlugin("Some layers ware deleted, therefore wasn't pasted. Don't delete a layer before you paste it.");
             }
         }
     }

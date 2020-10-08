@@ -22,5 +22,5 @@ If you wish, you can also create a shortcut for clearing plugin cache by followi
 
 
 ### What can't this plugin do:
-- This plugin won't work properly if you delete a copied node before pasting it first. It will still work for nodes that weren't deleted though.
+- This plugin won't work properly if you delete a copied node before pasting it first. It will still work for nodes that weren't deleted though. In fact, any changes made to the node between copy and pasting will be carried on to the paste. For example, if you copy an element, change its color, and then paste it, it will be of the new color you assigned, and not the original color of when you copied it.
 - This plugin doesn't access your system's clipboard, so you may not use regular copy/pasting commands to make it work;
