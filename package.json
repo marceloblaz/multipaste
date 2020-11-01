@@ -6,7 +6,7 @@
   "scripts": {
     "build": "tsc -p tsconfig.json"
   },
-  "author": "",
+  "author": "Marcelo Brasileiro",
   "license": "",
   "devDependencies": {
     "@figma/plugin-typings": "^1.18.1"
