@@ -6,7 +6,7 @@ if (figma.command == "copy") {
 } else if (figma.command == "paste") {
   let selection = figma.currentPage.selection;
   let destinations: Array<any> = selection.filter(
-    (item) => item.type == "FRAME" || item.type == "GROUP"
+    (item) => item.type == "FRAME" || "GROUP" ||"COMPONENT"
   );
   try {
     var copy = JSON.parse(figma.root.getPluginData("copy"));
@@ -15,12 +15,13 @@ if (figma.command == "copy") {
   }
   for (let destination of destinations) {
     for (let node of copy) {
-      let findNode = figma.getNodeById(node) as SceneNode;
+      let findNode = figma.getNodeById(node) as any;
       if (findNode) {
         switch (findNode.type) {
           case "COMPONENT":
             var instance = findNode.createInstance();
-            switch (findNode.parent.type) {
+            switch (findNode.parent.type) {     
+              case "COMPONENT_SET":         
               case "PAGE":
                 instance.x = (destination.width/2)-(instance.width/2);
                 instance.y = (destination.height/2)-(instance.height/2);

@@ -6,7 +6,7 @@ if (figma.command == "copy") {
 }
 else if (figma.command == "paste") {
     let selection = figma.currentPage.selection;
-    let destinations = selection.filter((item) => item.type == "FRAME" || item.type == "GROUP");
+    let destinations = selection.filter((item) => item.type == "FRAME" || "GROUP" || "COMPONENT");
     try {
         var copy = JSON.parse(figma.root.getPluginData("copy"));
     }
@@ -21,6 +21,7 @@ else if (figma.command == "paste") {
                     case "COMPONENT":
                         var instance = findNode.createInstance();
                         switch (findNode.parent.type) {
+                            case "COMPONENT_SET":
                             case "PAGE":
                                 instance.x = (destination.width / 2) - (instance.width / 2);
                                 instance.y = (destination.height / 2) - (instance.height / 2);
