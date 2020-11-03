@@ -30,13 +30,13 @@ else if (figma.command == "paste") {
                                 instance.y = destination.height / 2 - instance.height / 2;
                                 destination.appendChild(instance);
                                 finalSelection.push(instance);
-                                console.log("Passei aqui");
                                 break;
                             default:
                                 instance.x = findNode.x;
                                 instance.y = findNode.y;
                                 destination.appendChild(instance);
                                 finalSelection.push(instance);
+                            //maybe this is unnecessary since components are normally to be pasted in center
                         }
                         break;
                     default:
