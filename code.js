@@ -1,3 +1,4 @@
+//codeinit
 if (figma.command == "copy") {
     let selection = figma.currentPage.selection;
     let ids = selection.map((item) => {
@@ -36,7 +37,7 @@ else if (figma.command == "paste") {
                                 instance.y = findNode.y;
                                 destination.appendChild(instance);
                                 finalSelection.push(instance);
-                            //maybe this is unnecessary since components are normally to be pasted in center
+                            //maybe this is unnecessary since components are normally to be pasted in middle
                         }
                         break;
                     default:

@@ -1,3 +1,4 @@
+//codeinit
 if (figma.command == "copy") {
   let selection = figma.currentPage.selection;
   let ids = selection.map((item) => {
@@ -18,7 +19,7 @@ if (figma.command == "copy") {
   var finalSelection: SceneNode[] = [];
   for (let destination of destinations) {
     for (let node of copy) {
-      let findNode = figma.getNodeById(node) as any;
+      let findNode = figma.getNodeById(node) as SceneNode;
       if (findNode) {
         switch (findNode.type) {
           case "COMPONENT":
@@ -36,7 +37,7 @@ if (figma.command == "copy") {
                 instance.y = findNode.y;
                 destination.appendChild(instance);
                 finalSelection.push(instance);
-              //maybe this is unnecessary since components are normally to be pasted in center
+              //maybe this is unnecessary since components are normally to be pasted in middle
             }
             break;
           default:
