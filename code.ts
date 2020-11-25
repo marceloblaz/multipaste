@@ -1,4 +1,3 @@
-//codeinit
 if (figma.command == "copy") {
   let selection = figma.currentPage.selection;
   let ids = selection.map((item) => {
