@@ -5,7 +5,7 @@ if (figma.command == "copy") {
     return item.id;
   });
   figma.clientStorage.setAsync("copy", JSON.stringify(ids)).then(() => {
-    figma.closePlugin("Layers copied");
+    figma.closePlugin(selection.length + " layers copied");
   });
 } else if (figma.command == "paste") {
   let selection = figma.currentPage.selection;
@@ -17,7 +17,7 @@ if (figma.command == "copy") {
     var copy = JSON.parse(a);
     if (a == "{}" || a == null) {
       figma.closePlugin(
-        "Nothing to be pasted! Make sure you copied something first!"
+        "Nothing to be pasted! Make sure you copied something first"
       );
     } else {
       var finalSelection: SceneNode[] = [];
@@ -69,12 +69,12 @@ if (figma.command == "copy") {
         }
       }
     }
-    figma.closePlugin("Layers pasted!");
+    figma.closePlugin("Layers pasted into " + destinations.length + " destinations!");
   });
 }
 //
 else if (figma.command == "clear") {
-  figma.clientStorage.setAsync("copy", "{}").then(() => {
-    figma.closePlugin("Cache cleared");
+  figma.clientStorage.setAsync("copy", null).then(() => {
+    figma.closePlugin("Cache cleared!");
   });
 }
