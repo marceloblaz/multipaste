@@ -69,7 +69,9 @@ if (figma.command == "copy") {
         }
       }
     }
-    figma.closePlugin("Layers pasted into " + destinations.length + " destinations!");
+    figma.closePlugin(
+      "Layers pasted into " + destinations.length + " destinations!"
+    );
   });
 }
 //
