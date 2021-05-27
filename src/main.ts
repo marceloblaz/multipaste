@@ -1,82 +1,128 @@
-//
-if (figma.command == "copy") {
-  let selection = figma.currentPage.selection;
-  let ids = selection.map((item) => {
-    return item.id;
-  });
-  figma.clientStorage.setAsync("copy", JSON.stringify(ids)).then(() => {
-    figma.closePlugin(selection.length + " layers copied");
-  });
-} else if (figma.command == "paste") {
-  let selection = figma.currentPage.selection;
-  let destinations: Array<any> = selection.filter(
-    (item) => item.type == "FRAME" || "GROUP" || "COMPONENT"
-  );
-  //
-  var a = figma.clientStorage.getAsync("copy").then((a) => {
-    var copy = JSON.parse(a);
-    if (a == "{}" || a == null) {
-      figma.closePlugin(
-        "Nothing to be pasted! Make sure you copied something first"
-      );
-    } else {
-      var finalSelection: SceneNode[] = [];
-      for (let destination of destinations) {
-        for (let node of copy) {
-          let findNode = figma.getNodeById(node) as SceneNode;
-          if (findNode) {
-            switch (findNode.type) {
-              case "COMPONENT":
-                var instance = findNode.createInstance();
-                switch (findNode.parent.type) {
-                  case "COMPONENT_SET":
-                  case "PAGE":
-                    instance.x = destination.width / 2 - instance.width / 2;
-                    instance.y = destination.height / 2 - instance.height / 2;
-                    destination.appendChild(instance);
-                    finalSelection.push(instance);
-                    break;
-                  default:
-                    instance.x = findNode.x;
-                    instance.y = findNode.y;
-                    destination.appendChild(instance);
-                    finalSelection.push(instance);
-                  //maybe this is unnecessary since components are normally to be pasted in middle
-                }
-                break;
-              default:
-                let clone = findNode.clone();
-                switch (findNode.parent.type) {
-                  case "PAGE":
-                    clone.x = destination.width / 2 - clone.width / 2;
-                    clone.y = destination.height / 2 - clone.height / 2;
-                    destination.appendChild(clone);
-                    finalSelection.push(clone);
-                    break;
-                  default:
-                    clone.x = findNode.x;
-                    clone.y = findNode.y;
-                    destination.appendChild(clone);
-                    finalSelection.push(clone);
-                }
-            }
-            figma.currentPage.selection = finalSelection;
-          } else {
-            figma.closePlugin(
-              "Some layers were deleted, therefore weren't pasted. Don't delete a layer before you paste it."
-            );
-          }
-        }
-      }
-    }
-    figma.closePlugin(
-      "Layers pasted into " + destinations.length + " destinations!"
-    );
-  });
+enum Command {
+  COPY = "copy",
+  PASTE = "paste",
+  CLEAR_CLIPBOARD = "clear",
 }
-//
-else if (figma.command == "clear") {
-  figma.clientStorage.setAsync("copy", null).then(() => {
-    figma.closePlugin("Cache cleared!");
-  });
+
+enum Store {
+  NODE_CLIPBOARD = "node_clipboard",
+}
+
+const read = async <T = any>(key: Store): Promise<T> => {
+  const value: string = await figma.clientStorage.getAsync(key);
+
+  return JSON.parse(value);
+};
+
+const save = async (key: Store, value: any): Promise<void> =>
+  figma.clientStorage.setAsync(key, JSON.stringify(value));
+
+const copy = async (): Promise<void> => {
+  const { selection } = figma.currentPage;
+
+  if (selection.length === 0) {
+    return figma.closePlugin("Nothing to copy.");
+  }
+
+  const selectedIds = selection.map((item) => item.id);
+
+  const { parent } = selection[0];
+
+  const orderedIds: string[] = parent.children.reduce(
+    (ids, node) => (selectedIds.includes(node.id) ? [...ids, node.id] : ids),
+    []
+  );
+
+  await save(Store.NODE_CLIPBOARD, orderedIds);
+
+  figma.closePlugin(`${orderedIds.length} layers copied.`);
+};
+
+const paste = async (): Promise<void> => {
+  const { selection } = figma.currentPage;
+
+  const destinations = selection.filter((item) =>
+    ["FRAME", "GROUP", "COMPONENT"].includes(item.type)
+  ) as any[];
+
+  const nodeIds = await read<string[]>(Store.NODE_CLIPBOARD);
+
+  if (nodeIds === null || nodeIds.length === 0) {
+    return figma.closePlugin(
+      "Nothing to be pasted! Make sure you copied something first."
+    );
+  }
+
+  const finalSelection: SceneNode[] = [];
+
+  for (const destination of destinations) {
+    for (const nodeId of nodeIds) {
+      const node = figma.getNodeById(nodeId) as SceneNode;
+
+      if (!node) {
+        return figma.closePlugin(
+          "Some layers were deleted, therefore weren't pasted. Don't delete a layer before you paste it."
+        );
+      }
+
+      switch (node.type) {
+        case "COMPONENT":
+          const instance = node.createInstance();
+
+          switch (node.parent.type) {
+            case "COMPONENT_SET":
+            case "PAGE":
+              instance.x = destination.width / 2 - instance.width / 2;
+              instance.y = destination.height / 2 - instance.height / 2;
+              break;
+            default:
+              // Maybe this is unnecessary since components are normally to be pasted in middle.
+              instance.x = node.x;
+              instance.y = node.y;
+          }
+
+          destination.appendChild(instance);
+          finalSelection.push(instance);
+          break;
+        default:
+          const clone = node.clone();
+
+          switch (node.parent.type) {
+            case "PAGE":
+              clone.x = destination.width / 2 - clone.width / 2;
+              clone.y = destination.height / 2 - clone.height / 2;
+              break;
+            default:
+              clone.x = node.x;
+              clone.y = node.y;
+          }
+
+          destination.appendChild(clone);
+          finalSelection.push(clone);
+      }
+
+      figma.currentPage.selection = finalSelection;
+    }
+  }
+
+  figma.closePlugin(
+    "Layers pasted into " + destinations.length + " destinations!"
+  );
+};
+
+const clear = async (): Promise<void> => {
+  await save(Store.NODE_CLIPBOARD, null);
+  figma.closePlugin("Clipboard cleared!");
+};
+
+switch (figma.command) {
+  case Command.COPY:
+    copy();
+    break;
+  case Command.PASTE:
+    paste();
+    break;
+  case Command.CLEAR_CLIPBOARD:
+    clear();
+    break;
 }

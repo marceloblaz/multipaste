@@ -6,6 +6,6 @@
   "menu": [
     {"name": "Copy", "command": "copy"},
     {"name": "Paste", "command": "paste"},
-    {"name": "Clear Cache", "command": "clear"}
+    {"name": "Clear clipboard", "command": "clear"}
   ]
 }
