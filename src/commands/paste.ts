@@ -1,42 +1,4 @@
-enum Command {
-  COPY = "copy",
-  PASTE = "paste",
-  CLEAR_CLIPBOARD = "clear",
-}
-
-enum Store {
-  NODE_CLIPBOARD = "node_clipboard",
-}
-
-const read = async <T = any>(key: Store): Promise<T> => {
-  const value: string = await figma.clientStorage.getAsync(key);
-
-  return JSON.parse(value);
-};
-
-const save = async (key: Store, value: any): Promise<void> =>
-  figma.clientStorage.setAsync(key, JSON.stringify(value));
-
-const copy = async (): Promise<void> => {
-  const { selection } = figma.currentPage;
-
-  if (selection.length === 0) {
-    return figma.closePlugin("Nothing to copy.");
-  }
-
-  const selectedIds = selection.map((item) => item.id);
-
-  const { parent } = selection[0];
-
-  const orderedIds: string[] = parent.children.reduce(
-    (ids, node) => (selectedIds.includes(node.id) ? [...ids, node.id] : ids),
-    []
-  );
-
-  await save(Store.NODE_CLIPBOARD, orderedIds);
-
-  figma.closePlugin(`${orderedIds.length} layers copied.`);
-};
+import * as Store from "@/store";
 
 const paste = async (): Promise<void> => {
   const { selection } = figma.currentPage;
@@ -45,9 +7,9 @@ const paste = async (): Promise<void> => {
     ["FRAME", "GROUP", "COMPONENT"].includes(item.type)
   ) as any[];
 
-  const nodeIds = await read<string[]>(Store.NODE_CLIPBOARD);
+  const nodeIds = await Store.read<string[]>();
 
-  if (nodeIds === null || nodeIds.length === 0) {
+  if (nodeIds === null) {
     return figma.closePlugin(
       "Nothing to be pasted! Make sure you copied something first."
     );
@@ -110,19 +72,4 @@ const paste = async (): Promise<void> => {
   );
 };
 
-const clear = async (): Promise<void> => {
-  await save(Store.NODE_CLIPBOARD, null);
-  figma.closePlugin("Clipboard cleared!");
-};
-
-switch (figma.command) {
-  case Command.COPY:
-    copy();
-    break;
-  case Command.PASTE:
-    paste();
-    break;
-  case Command.CLEAR_CLIPBOARD:
-    clear();
-    break;
-}
+export default paste;

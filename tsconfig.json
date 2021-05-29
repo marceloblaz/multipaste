@@ -2,10 +2,16 @@
   "compilerOptions": {
     "lib": ["ESNext", "DOM"],
     "target": "es6",
+    "baseUrl": ".",
     "typeRoots": [
       "./node_modules/@types",
       "./node_modules/@figma"
     ],
+    "paths": {
+      "@/*": ["./src/*"]
+    },
+    "moduleResolution": "node",
     "outDir": "dist"
-  }
+  },
+  "exclude": ["node_modules", "dist"]
 }
