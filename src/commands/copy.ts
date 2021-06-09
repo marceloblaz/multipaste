@@ -7,18 +7,59 @@ const copy = async (): Promise<void> => {
     return figma.closePlugin("Nothing to copy.");
   }
 
-  const selectedIds = selection.map((item) => item.id);
+  let frame: FrameNode;
+  let frameSelectionIds: string[] = [];
+  let pageSelectionIds: string[] = [];
 
-  const { parent } = selection[0];
+  for (const item of selection) {
+    switch (item.parent.type) {
+      case "PAGE":
+        pageSelectionIds.push(item.id);
+        break;
+      case "FRAME":
+        if (!frame) {
+          frame = item.parent;
+        }
 
-  const orderedIds: string[] = parent.children.reduce(
-    (ids, node) => (selectedIds.includes(node.id) ? [...ids, node.id] : ids),
-    []
-  );
+        if (item.parent.id !== frame.id) {
+          return figma.closePlugin(
+            "Cannot copy elements from different frames."
+          );
+        }
+
+        frameSelectionIds.push(item.id);
+        break;
+      default:
+        return figma.closePlugin("The selected elements cannot be grouped.");
+    }
+  }
+
+  const fixedSelectionIds: string[] =
+    frame?.numberOfFixedChildren > 0
+      ? frame.children
+          .slice(-frame.numberOfFixedChildren)
+          .filter(({ id }) => frameSelectionIds.includes(id))
+          .map(({ id }) => id)
+      : [];
+
+  const orderedIds: {
+    scrolls: string[];
+    fixed: string[];
+  } = {
+    scrolls: pageSelectionIds.concat(
+      frame?.children
+        .filter(
+          ({ id }) =>
+            frameSelectionIds.includes(id) && !fixedSelectionIds.includes(id)
+        )
+        .map(({ id }) => id) ?? []
+    ),
+    fixed: fixedSelectionIds,
+  };
 
   await Store.save(orderedIds);
 
-  figma.closePlugin(`${orderedIds.length} layers copied.`);
+  figma.closePlugin(`${selection.length} layers copied.`);
 };
 
 export default copy;

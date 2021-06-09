@@ -3,22 +3,28 @@ import * as Store from "@/store";
 const paste = async (): Promise<void> => {
   const { selection } = figma.currentPage;
 
-  const destinations = selection.filter((item) =>
-    ["FRAME", "GROUP", "COMPONENT"].includes(item.type)
-  ) as any[];
+  const destinations: FrameNode[] = selection.filter(({ type }) =>
+    ["FRAME", "GROUP", "COMPONENT"].includes(type)
+  ) as FrameNode[];
 
-  const nodeIds = await Store.read<string[]>();
+  const clipboard = await Store.read<{ scrolls: string[]; fixed: string[] }>();
 
-  if (nodeIds === null) {
+  if (clipboard === null) {
     return figma.closePlugin(
       "Nothing to be pasted! Make sure you copied something first."
     );
   }
 
+  const nodeIds: { id: string; fixed: boolean }[] = clipboard.scrolls
+    .map((id) => ({ id, fixed: false }))
+    .concat(clipboard.fixed.map((id) => ({ id, fixed: true })));
+
   const finalSelection: SceneNode[] = [];
 
   for (const destination of destinations) {
-    for (const nodeId of nodeIds) {
+    const { numberOfFixedChildren } = destination;
+
+    for (const { id: nodeId, fixed } of nodeIds) {
       const node = figma.getNodeById(nodeId) as SceneNode;
 
       if (!node) {
@@ -27,49 +33,57 @@ const paste = async (): Promise<void> => {
         );
       }
 
+      let newNode: SceneNode;
+
       switch (node.type) {
         case "COMPONENT":
-          const instance = node.createInstance();
+          newNode = node.createInstance();
 
           switch (node.parent.type) {
             case "COMPONENT_SET":
             case "PAGE":
-              instance.x = destination.width / 2 - instance.width / 2;
-              instance.y = destination.height / 2 - instance.height / 2;
+              newNode.x = destination.width / 2 - newNode.width / 2;
+              newNode.y = destination.height / 2 - newNode.height / 2;
               break;
             default:
               // Maybe this is unnecessary since components are normally to be pasted in middle.
-              instance.x = node.x;
-              instance.y = node.y;
+              newNode.x = node.x;
+              newNode.y = node.y;
           }
 
-          destination.appendChild(instance);
-          finalSelection.push(instance);
           break;
         default:
-          const clone = node.clone();
+          newNode = node.clone();
 
           switch (node.parent.type) {
             case "PAGE":
-              clone.x = destination.width / 2 - clone.width / 2;
-              clone.y = destination.height / 2 - clone.height / 2;
+              newNode.x = destination.width / 2 - newNode.width / 2;
+              newNode.y = destination.height / 2 - newNode.height / 2;
               break;
             default:
-              clone.x = node.x;
-              clone.y = node.y;
+              newNode.x = node.x;
+              newNode.y = node.y;
           }
-
-          destination.appendChild(clone);
-          finalSelection.push(clone);
       }
 
+      if (fixed) {
+        destination.appendChild(newNode);
+        if (destination.numberOfFixedChildren === 0) {
+          destination.numberOfFixedChildren = 1;
+        }
+      } else {
+        destination.insertChild(
+          destination.children.length - numberOfFixedChildren,
+          newNode
+        );
+      }
+
+      finalSelection.push(newNode);
       figma.currentPage.selection = finalSelection;
     }
   }
 
-  figma.closePlugin(
-    "Layers pasted into " + destinations.length + " destinations!"
-  );
+  figma.closePlugin(`Layers pasted into ${destinations.length} destinations!`);
 };
 
 export default paste;
