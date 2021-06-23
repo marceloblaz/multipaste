@@ -1,5 +1,10 @@
 import * as Store from "@/store";
 
+const getChildrenDeep = (frame): SceneNode[] =>
+  frame.children.flatMap((node) =>
+    node.children ? [node, ...getChildrenDeep(node)] : node
+  );
+
 const copy = async (): Promise<void> => {
   const { selection } = figma.currentPage;
 
@@ -30,7 +35,7 @@ const copy = async (): Promise<void> => {
         frameSelectionIds.push(item.id);
         break;
       default:
-        return figma.closePlugin("The selected elements cannot be grouped.");
+        frameSelectionIds.push(item.id);
     }
   }
 
@@ -47,12 +52,14 @@ const copy = async (): Promise<void> => {
     fixed: string[];
   } = {
     scrolls: pageSelectionIds.concat(
-      frame?.children
-        .filter(
-          ({ id }) =>
-            frameSelectionIds.includes(id) && !fixedSelectionIds.includes(id)
-        )
-        .map(({ id }) => id) ?? []
+      (frame &&
+        getChildrenDeep(frame)
+          .filter(
+            ({ id }) =>
+              frameSelectionIds.includes(id) && !fixedSelectionIds.includes(id)
+          )
+          .map(({ id }) => id)) ??
+        []
     ),
     fixed: fixedSelectionIds,
   };
