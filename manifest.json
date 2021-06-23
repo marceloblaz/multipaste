@@ -2,7 +2,7 @@
   "name": "Multipaste",
   "id": "893914045094807058",
   "api": "1.0.0",
-  "main": "dist/main.js",
+  "main": "dist/multipaste.bundle.js",
   "menu": [
     {"name": "Copy", "command": "copy"},
     {"name": "Paste", "command": "paste"},
